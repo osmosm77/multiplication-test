@@ -1,0 +1,106 @@
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <title>اختبار عشوائي لجدول الضرب</title>
+  <style>
+    body { font-family: Arial; text-align: center; direction: rtl; }
+    .question { margin: 10px 0; }
+    .hidden { display: none; }
+    #timer { font-size: 20px; color: red; margin: 15px; }
+    input[type="number"] { width: 60px; }
+  </style>
+</head>
+<body>
+
+  <h1>اختبار عشوائي لجدول الضرب (1 إلى 12)</h1>
+  <button onclick="generateRandomTest()">ابدأ اختبار عشوائي</button>
+  <div id="timer" class="hidden">الوقت: 10:00</div>
+
+  <form id="quizForm" class="hidden">
+    <div id="questionsContainer"></div>
+    <button type="submit">تحقق من الإجابات</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    let timerInterval;
+
+    function startTimer(duration) {
+      let timer = duration, minutes, seconds;
+      const timerDisplay = document.getElementById('timer');
+      timerInterval = setInterval(function () {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+        timerDisplay.textContent = "الوقت: " + minutes + ":" + seconds;
+
+        if (--timer < 0) {
+          clearInterval(timerInterval);
+          document.getElementById('quizForm').querySelectorAll('input').forEach(input => input.disabled = true);
+          document.getElementById('result').innerHTML = "<h2>انتهى الوقت!</h2>";
+        }
+      }, 1000);
+    }
+
+    function generateRandomTest() {
+      const container = document.getElementById('questionsContainer');
+      container.innerHTML = '';
+      const questions = new Set();
+
+      while (questions.size < 48) {
+        const a = Math.floor(Math.random() * 12) + 1;
+        const b = Math.floor(Math.random() * 12) + 1;
+        const key = `${a}x${b}`;
+        if (!questions.has(key)) {
+          questions.add(key);
+          container.innerHTML += `
+            <div class="question">
+              ${a} × ${b} = 
+              <input type="number" name="${key}" required>
+            </div>
+          `;
+        }
+      }
+
+      document.getElementById('quizForm').classList.remove('hidden');
+      document.getElementById('timer').classList.remove('hidden');
+      document.getElementById('result').innerHTML = '';
+      clearInterval(timerInterval);
+      startTimer(600); // 10 دقائق
+    }
+
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      clearInterval(timerInterval);
+      const form = e.target;
+      let score = 0;
+      const inputs = form.querySelectorAll('input');
+
+      inputs.forEach(input => {
+        const [a, b] = input.name.split('x').map(Number);
+        const correctAnswer = a * b;
+        const userAnswer = parseInt(input.value);
+
+        if (userAnswer === correctAnswer) {
+          input.style.borderColor = 'green';
+          score++;
+        } else {
+          input.style.borderColor = 'red';
+        }
+        input.disabled = true;
+      });
+
+      document.getElementById('result').innerHTML = `
+        <h2>النتيجة: ${score} من 48</h2>
+      `;
+    });
+  </script>
+
+</body>
+</html>
